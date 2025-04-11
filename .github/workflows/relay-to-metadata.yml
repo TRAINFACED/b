@@ -35,10 +35,23 @@ jobs:
 
       - name: Dispatch to Metadata
         run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.METADATA_PAT }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/your-org/metadata/dispatches \
-            -d "$(jq -nc \
-                  --argjson client_payload '${{ steps.payload.outputs.payload }}' \
-                  '{event_type: "new-release", client_payload: $client_payload}')"
+              echo "Dispatching to Metadata repo..."
+              response=$(mktemp)
+          
+              status=$(curl -s -o "$response" -w "%{http_code}" -X POST \
+                -H "Authorization: Bearer ${{ secrets.METADATA_PAT }}" \
+                -H "Accept: application/vnd.github+json" \
+                https://api.github.com/repos/your-org/metadata/dispatches \
+                -d "$(jq -nc \
+                      --argjson client_payload '${{ steps.payload.outputs.payload }}' \
+                      '{event_type: "new-release", client_payload: $client_payload}')")
+          
+              if [ "$status" -ne 204 ]; then
+                echo "❌ Dispatch failed with status code $status"
+                echo "--- response body ---"
+                cat "$response"
+                echo "----------------------"
+                exit 1
+              fi
+          
+              echo "✅ Dispatch succeeded with status $status"
