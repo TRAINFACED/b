@@ -41,7 +41,7 @@ jobs:
               status=$(curl -s -o "$response" -w "%{http_code}" -X POST \
                 -H "Authorization: Bearer ${{ secrets.METADATA_PAT }}" \
                 -H "Accept: application/vnd.github+json" \
-                https://api.github.com/repos/your-org/metadata/dispatches \
+                https://api.github.com/repos/TRAINFACED/metadata/dispatches \
                 -d "$(jq -nc \
                       --argjson client_payload '${{ steps.payload.outputs.payload }}' \
                       '{event_type: "new-release", client_payload: $client_payload}')")
