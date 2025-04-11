@@ -26,12 +26,12 @@ jobs:
       - name: Prepare payload
         id: payload
         run: |
-          payload=$(jq -n \
-            --arg sender "${{ github.repository }}" \
-            --arg version "${{ inputs.tag }}" \
-            --argjson config '${{ steps.config.outputs.config }}' \
-            '{sender: $sender, version: $version, config: $config}')
-          echo "payload=$payload" >> $GITHUB_OUTPUT
+            payload=$(jq -nc -c \
+              --arg sender "${{ github.repository }}" \
+              --arg version "${{ inputs.tag }}" \
+              --argjson config '${{ steps.config.outputs.config }}' \
+              '{sender: $sender, version: $version, config: $config}')
+            echo "payload=$payload" >> $GITHUB_OUTPUT
 
       - name: Dispatch to Metadata
         run: |
