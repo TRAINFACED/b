@@ -1,6 +1,7 @@
 # NOTE: only this workflow should be allowed to call the metadata repo
 # or else those workflows can claim to dispatch events for other repos
 # which is a security risk.
+# This repo should be private.
 
 name: Relay to Metadata
 
@@ -13,6 +14,7 @@ on:
 
 jobs:
   relay:
+    environment: relay # use secrets from _THIS_ repo.  This to to prevent other repos from dispatching to metadata directly.
     # don't run on tags to _this_ repo // could maybe check github.repository != "TRAINFACED/b" instead....
     if: github.event_name == 'push' 
     runs-on: ubuntu-latest
