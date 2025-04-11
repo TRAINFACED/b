@@ -16,21 +16,19 @@ on:
 
 jobs:
   relay:
-    # don't run on tags to _this_ repo
-    # if: github.event_name == 'workflow_call' 
+    # don't run on tags to _this_ repo // could maybe check github.repository != "TRAINFACED/b" instead....
+    if: github.event_name == 'push' 
     runs-on: ubuntu-latest
 
     steps:
-      - run: |
-          echo "EVENT: ${{ github.event_name }}"
-
       - name: Checkout source repo (Repo A)
         uses: actions/checkout@v4
 
       - name: Load config.json
-        id: config
+        id: files
         run: |
           echo "config=$(jq -c . < config.json)" >> $GITHUB_OUTPUT
+          echo "capabilities=$(jq -c . < baton_capabilities.json)" >> $GITHUB_OUTPUT
 
       - name: Prepare payload
         id: payload
@@ -38,8 +36,9 @@ jobs:
             payload=$(jq -nc -c \
               --arg sender "${{ github.repository }}" \
               --arg version "${{ inputs.tag }}" \
-              --argjson config '${{ steps.config.outputs.config }}' \
-              '{sender: $sender, version: $version, config: $config}')
+              --argjson config '${{ steps.files.outputs.config }}' \
+              --argjson capabilities '${{ steps.files.outputs.capabilities }}' \
+              '{sender: $sender, version: $version, config: $config, capabilities: $capabilities}')
             echo "payload=$payload" >> $GITHUB_OUTPUT
 
       - name: Dispatch to Metadata
