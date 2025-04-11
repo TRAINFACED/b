@@ -28,7 +28,7 @@ jobs:
         id: files
         run: |
           echo "config=$(jq -c . < config.json)" >> $GITHUB_OUTPUT
-          echo "capabilities=$(jq -c . < baton_capabilities.json)" >> $GITHUB_OUTPUT
+          echo "baton_capabilities=$(jq -c . < baton_capabilities.json)" >> $GITHUB_OUTPUT
 
       - name: Prepare payload
         id: payload
@@ -37,8 +37,8 @@ jobs:
               --arg sender "${{ github.repository }}" \
               --arg version "${{ inputs.tag }}" \
               --argjson config '${{ steps.files.outputs.config }}' \
-              --argjson capabilities '${{ steps.files.outputs.capabilities }}' \
-              '{sender: $sender, version: $version, config: $config, capabilities: $capabilities}')
+              --argjson baton_capabilities '${{ steps.files.outputs.baton_capabilities }}' \
+              '{sender: $sender, version: $version, config: $config, baton_capabilities: $baton_capabilities}')
             echo "payload=$payload" >> $GITHUB_OUTPUT
 
       - name: Dispatch to Metadata
