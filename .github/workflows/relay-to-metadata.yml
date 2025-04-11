@@ -1,0 +1,44 @@
+name: Relay to Metadata
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+    secrets:
+      METADATA_PAT:
+        required: true
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo (Repo A)
+        uses: actions/checkout@v4
+
+      - name: Load config.json
+        id: config
+        run: |
+          echo "config=$(jq -c . < config.json)" >> $GITHUB_OUTPUT
+
+      - name: Prepare payload
+        id: payload
+        run: |
+          payload=$(jq -n \
+            --arg sender "${{ github.repository }}" \
+            --arg version "${{ inputs.tag }}" \
+            --argjson config '${{ steps.config.outputs.config }}' \
+            '{sender: $sender, version: $version, config: $config}')
+          echo "payload=$payload" >> $GITHUB_OUTPUT
+
+      - name: Dispatch to Metadata
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.METADATA_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/your-org/metadata/dispatches \
+            -d "$(jq -nc \
+                  --argjson client_payload '${{ steps.payload.outputs.payload }}' \
+                  '{event_type: "new-release", client_payload: $client_payload}')"
