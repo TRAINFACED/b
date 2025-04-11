@@ -1,3 +1,7 @@
+# NOTE: only this workflow should be allowed to call the metadata repo
+# or else those workflows can claim to dispatch events for other repos
+# which is a security risk.
+
 name: Relay to Metadata
 
 on:
@@ -12,6 +16,8 @@ on:
 
 jobs:
   relay:
+    # don't run on tags to _this_ repo
+    if: github.event_name == 'workflow_call' 
     runs-on: ubuntu-latest
 
     steps:
