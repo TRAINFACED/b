@@ -2,6 +2,10 @@
 # or else those workflows can claim to dispatch events for other repos
 # which is a security risk.
 # This repo should be private.
+    # secrets:
+    #   METADATA_PAT:
+    #     required: true # this is actually injected via github actions secrets relay env in repo B
+
 
 name: Relay to Metadata
 
@@ -11,40 +15,28 @@ on:
       tag:
         required: true
         type: string
-    # secrets:
-    #   METADATA_PAT:
-    #     required: true # this is actually injected via github actions secrets relay env in repo B
+    secrets:
+      METADATA_PAT:
+        required: true
 
 jobs:
   relay:
-    environment: relay # use secrets from _THIS_ repo.  This to to prevent other repos from dispatching to metadata directly.
     # don't run on tags to _this_ repo // could maybe check github.repository != "TRAINFACED/b" instead....
     if: github.event_name == 'push' 
     runs-on: ubuntu-latest
 
     steps:
-      - name: Use METADATA_PAT
-        run: |
-          echo "Token is: ${{ secrets.METADATA_PAT }}"
 
       - name: Checkout source repo (Repo A)
         uses: actions/checkout@v4
-
-      - name: Load config.json
-        id: files
-        run: |
-          echo "config=$(jq -c . < config.json)" >> $GITHUB_OUTPUT
-          echo "baton_capabilities=$(jq -c . < baton_capabilities.json)" >> $GITHUB_OUTPUT
 
       - name: Prepare payload
         id: payload
         run: |
             payload=$(jq -nc -c \
-              --arg sender "${{ github.repository }}" \
-              --arg version "${{ inputs.tag }}" \
-              --argjson config '${{ steps.files.outputs.config }}' \
-              --argjson baton_capabilities '${{ steps.files.outputs.baton_capabilities }}' \
-              '{sender: $sender, version: $version, config: $config, baton_capabilities: $baton_capabilities}')
+              --arg repo "${{ github.repository }}" \
+              --arg tag "${{ inputs.tag }}" \
+              '{repo: $repo, tag: $tag}')
             echo "payload=$payload" >> $GITHUB_OUTPUT
 
       - name: Dispatch to Metadata
