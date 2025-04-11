@@ -11,9 +11,9 @@ on:
       tag:
         required: true
         type: string
-    secrets:
-      METADATA_PAT:
-        required: true
+    # secrets:
+    #   METADATA_PAT:
+    #     required: true # this is actually injected via github actions secrets relay env in repo B
 
 jobs:
   relay:
@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Use METADATA_PAT
+        run: |
+          echo "Token is: ${{ secrets.METADATA_PAT }}"
+
       - name: Checkout source repo (Repo A)
         uses: actions/checkout@v4
 
