@@ -10,9 +10,6 @@ on:
       tag:
         required: true
         type: string
-    secrets:
-      METADATA_PAT:
-        required: true
 
 jobs:
   relay:
