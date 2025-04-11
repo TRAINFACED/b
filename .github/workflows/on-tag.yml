@@ -17,10 +17,13 @@ on:
 jobs:
   relay:
     # don't run on tags to _this_ repo
-    if: github.event_name == 'workflow_call' 
+    # if: github.event_name == 'workflow_call' 
     runs-on: ubuntu-latest
 
     steps:
+      - run: |
+          echo "EVENT: ${{ github.event_name }}"
+
       - name: Checkout source repo (Repo A)
         uses: actions/checkout@v4
 
