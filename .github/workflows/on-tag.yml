@@ -26,10 +26,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout source repo (Repo A)
-        uses: actions/checkout@v4
-
       - name: Prepare payload
         id: payload
         run: |
